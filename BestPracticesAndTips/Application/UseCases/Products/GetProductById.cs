@@ -10,18 +10,12 @@ public class GetProductByIdQuery : IRequest<ProductDto?>
     public int Id { get; init; }
 }
 
-public class GetProductByIdQueryHandler : IRequestHandler<GetProductByIdQuery, ProductDto?>
+public class GetProductByIdQueryHandler(IProductRepository productRepository)
+    : IRequestHandler<GetProductByIdQuery, ProductDto?>
 {
-    private readonly IProductRepository _productRepository;
-
-    public GetProductByIdQueryHandler(IProductRepository productRepository)
-    {
-        _productRepository = productRepository;
-    }
-
     public async Task<ProductDto?> Handle(GetProductByIdQuery request, CancellationToken cancellationToken)
     {
-        var product = await _productRepository.GetByIdAsync(request.Id);
+        var product = await productRepository.GetByIdAsync(request.Id);
         
         return product == null ? null : MapToDto(product);
     }

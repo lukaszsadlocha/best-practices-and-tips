@@ -5,12 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BestPracticesAndTips.Infrastructure.Repositories;
 
-public class CustomerRepository : Repository<Customer>, ICustomerRepository
+public class CustomerRepository(ApplicationDbContext context) : Repository<Customer>(context), ICustomerRepository
 {
-    public CustomerRepository(ApplicationDbContext context) : base(context)
-    {
-    }
-
     public async Task<Customer?> GetByEmailAsync(string email)
     {
         return await _dbSet.FirstOrDefaultAsync(c => c.Email == email);

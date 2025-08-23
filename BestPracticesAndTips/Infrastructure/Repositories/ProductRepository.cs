@@ -5,12 +5,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BestPracticesAndTips.Infrastructure.Repositories;
 
-public class ProductRepository : Repository<Product>, IProductRepository
+public class ProductRepository(ApplicationDbContext context) : Repository<Product>(context), IProductRepository
 {
-    public ProductRepository(ApplicationDbContext context) : base(context)
-    {
-    }
-
     public async Task<IEnumerable<Product>> GetActiveProductsAsync()
     {
         return await _dbSet.Where(p => p.IsActive).ToListAsync();

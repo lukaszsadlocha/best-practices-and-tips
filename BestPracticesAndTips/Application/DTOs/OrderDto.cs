@@ -2,7 +2,7 @@ using BestPracticesAndTips.Domain.Enums;
 
 namespace BestPracticesAndTips.Application.DTOs;
 
-public class OrderDto
+public record OrderDto
 {
     public int Id { get; set; }
     public int CustomerId { get; set; }
@@ -14,10 +14,10 @@ public class OrderDto
     public string BillingAddress { get; set; } = string.Empty;
     public string? Notes { get; set; }
     public DateTime? ShippedDate { get; set; }
-    public List<OrderItemDto> OrderItems { get; set; } = new();
+    public IReadOnlyCollection<OrderItemDto> OrderItems { get; set; } = [];
 }
 
-public class OrderItemDto
+public record OrderItemDto
 {
     public int Id { get; set; }
     public int ProductId { get; set; }
@@ -27,16 +27,16 @@ public class OrderItemDto
     public decimal SubTotal { get; set; }
 }
 
-public class CreateOrderDto
+public record CreateOrderDto
 {
     public int CustomerId { get; set; }
     public string ShippingAddress { get; set; } = string.Empty;
     public string BillingAddress { get; set; } = string.Empty;
     public string? Notes { get; set; }
-    public List<CreateOrderItemDto> OrderItems { get; set; } = new();
+    public IReadOnlyCollection<CreateOrderItemDto> OrderItems { get; set; } = [];
 }
 
-public class CreateOrderItemDto
+public record CreateOrderItemDto
 {
     public int ProductId { get; set; }
     public int Quantity { get; set; }

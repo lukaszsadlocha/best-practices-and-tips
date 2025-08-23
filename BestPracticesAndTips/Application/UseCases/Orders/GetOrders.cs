@@ -14,34 +14,28 @@ public class GetOrdersQuery : IRequest<IEnumerable<OrderDto>>
     public int RecentDays { get; init; } = 30;
 }
 
-public class GetOrdersQueryHandler : IRequestHandler<GetOrdersQuery, IEnumerable<OrderDto>>
+public class GetOrdersQueryHandler(IOrderRepository orderRepository)
+    : IRequestHandler<GetOrdersQuery, IEnumerable<OrderDto>>
 {
-    private readonly IOrderRepository _orderRepository;
-
-    public GetOrdersQueryHandler(IOrderRepository orderRepository)
-    {
-        _orderRepository = orderRepository;
-    }
-
     public async Task<IEnumerable<OrderDto>> Handle(GetOrdersQuery request, CancellationToken cancellationToken)
     {
         IEnumerable<Order> orders;
 
         if (request.CustomerId.HasValue)
         {
-            orders = await _orderRepository.GetOrdersByCustomerIdAsync(request.CustomerId.Value);
+            orders = await orderRepository.GetOrdersByCustomerIdAsync(request.CustomerId.Value);
         }
         else if (request.Status.HasValue)
         {
-            orders = await _orderRepository.GetOrdersByStatusAsync(request.Status.Value);
+            orders = await orderRepository.GetOrdersByStatusAsync(request.Status.Value);
         }
         else if (request.RecentOnly)
         {
-            orders = await _orderRepository.GetRecentOrdersAsync(request.RecentDays);
+            orders = await orderRepository.GetRecentOrdersAsync(request.RecentDays);
         }
         else
         {
-            orders = await _orderRepository.GetAllAsync();
+            orders = await orderRepository.GetAllAsync();
         }
 
         return orders.Select(MapToDto);
@@ -69,7 +63,7 @@ public class GetOrdersQueryHandler : IRequestHandler<GetOrdersQuery, IEnumerable
                 Quantity = oi.Quantity,
                 UnitPrice = oi.UnitPrice,
                 SubTotal = oi.GetSubTotal()
-            }).ToList() ?? new List<OrderItemDto>()
+            }).ToList() ?? []
         };
     }
 }

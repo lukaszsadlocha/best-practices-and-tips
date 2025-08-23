@@ -1,6 +1,6 @@
 namespace BestPracticesAndTips.Application.DTOs;
 
-public class ProductDto
+public record ProductDto
 {
     public int Id { get; set; }
     public string Name { get; set; } = string.Empty;
@@ -14,7 +14,7 @@ public class ProductDto
     public bool IsInStock { get; set; }
 }
 
-public class CreateProductDto
+public record CreateProductDto
 {
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
@@ -25,7 +25,7 @@ public class CreateProductDto
     public string? ImageUrl { get; set; }
 }
 
-public class UpdateProductDto
+public record UpdateProductDto
 {
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;

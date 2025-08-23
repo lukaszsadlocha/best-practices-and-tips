@@ -6,12 +6,8 @@ using Microsoft.EntityFrameworkCore;
 
 namespace BestPracticesAndTips.Infrastructure.Repositories;
 
-public class OrderRepository : Repository<Order>, IOrderRepository
+public class OrderRepository(ApplicationDbContext context) : Repository<Order>(context), IOrderRepository
 {
-    public OrderRepository(ApplicationDbContext context) : base(context)
-    {
-    }
-
     public async Task<IEnumerable<Order>> GetOrdersByCustomerIdAsync(int customerId)
     {
         return await _dbSet

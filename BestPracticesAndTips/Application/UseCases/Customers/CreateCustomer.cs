@@ -10,19 +10,13 @@ public class CreateCustomerCommand : IRequest<CustomerDto>
     public CreateCustomerDto Customer { get; init; } = null!;
 }
 
-public class CreateCustomerCommandHandler : IRequestHandler<CreateCustomerCommand, CustomerDto>
+public class CreateCustomerCommandHandler(ICustomerRepository customerRepository)
+    : IRequestHandler<CreateCustomerCommand, CustomerDto>
 {
-    private readonly ICustomerRepository _customerRepository;
-
-    public CreateCustomerCommandHandler(ICustomerRepository customerRepository)
-    {
-        _customerRepository = customerRepository;
-    }
-
     public async Task<CustomerDto> Handle(CreateCustomerCommand request, CancellationToken cancellationToken)
     {
         // Check if customer with email already exists
-        var existingCustomer = await _customerRepository.GetByEmailAsync(request.Customer.Email);
+        var existingCustomer = await customerRepository.GetByEmailAsync(request.Customer.Email);
         if (existingCustomer != null)
         {
             throw new InvalidOperationException("Customer with this email already exists.");
@@ -41,7 +35,7 @@ public class CreateCustomerCommandHandler : IRequestHandler<CreateCustomerComman
             PostalCode = request.Customer.PostalCode
         };
 
-        var createdCustomer = await _customerRepository.AddAsync(customer);
+        var createdCustomer = await customerRepository.AddAsync(customer);
 
         return MapToDto(createdCustomer);
     }

@@ -11,30 +11,24 @@ public class GetProductsQuery : IRequest<IEnumerable<ProductDto>>
     public string? Category { get; init; }
 }
 
-public class GetProductsQueryHandler : IRequestHandler<GetProductsQuery, IEnumerable<ProductDto>>
+public class GetProductsQueryHandler(IProductRepository productRepository)
+    : IRequestHandler<GetProductsQuery, IEnumerable<ProductDto>>
 {
-    private readonly IProductRepository _productRepository;
-
-    public GetProductsQueryHandler(IProductRepository productRepository)
-    {
-        _productRepository = productRepository;
-    }
-
     public async Task<IEnumerable<ProductDto>> Handle(GetProductsQuery request, CancellationToken cancellationToken)
     {
         IEnumerable<Product> products;
 
         if (!string.IsNullOrEmpty(request.Category))
         {
-            products = await _productRepository.GetProductsByCategoryAsync(request.Category);
+            products = await productRepository.GetProductsByCategoryAsync(request.Category);
         }
         else if (request.ActiveOnly)
         {
-            products = await _productRepository.GetActiveProductsAsync();
+            products = await productRepository.GetActiveProductsAsync();
         }
         else
         {
-            products = await _productRepository.GetAllAsync();
+            products = await productRepository.GetAllAsync();
         }
 
         return products.Select(MapToDto);

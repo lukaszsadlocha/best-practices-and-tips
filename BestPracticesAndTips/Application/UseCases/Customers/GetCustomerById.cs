@@ -10,18 +10,12 @@ public class GetCustomerByIdQuery : IRequest<CustomerDto?>
     public int Id { get; init; }
 }
 
-public class GetCustomerByIdQueryHandler : IRequestHandler<GetCustomerByIdQuery, CustomerDto?>
+public class GetCustomerByIdQueryHandler(ICustomerRepository customerRepository)
+    : IRequestHandler<GetCustomerByIdQuery, CustomerDto?>
 {
-    private readonly ICustomerRepository _customerRepository;
-
-    public GetCustomerByIdQueryHandler(ICustomerRepository customerRepository)
-    {
-        _customerRepository = customerRepository;
-    }
-
     public async Task<CustomerDto?> Handle(GetCustomerByIdQuery request, CancellationToken cancellationToken)
     {
-        var customer = await _customerRepository.GetByIdAsync(request.Id);
+        var customer = await customerRepository.GetByIdAsync(request.Id);
         
         return customer == null ? null : MapToDto(customer);
     }
