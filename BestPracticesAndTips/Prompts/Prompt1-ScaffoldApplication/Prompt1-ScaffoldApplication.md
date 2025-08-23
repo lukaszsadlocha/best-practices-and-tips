@@ -1,15 +1,15 @@
-﻿You are experienced Senior C# Developer.
+﻿You are an experienced Senior C# Developer.
 
-I have simple web api solution in my JetBrains rider "BestPracticesAndTips"
+I have a simple web api solution in my JetBrains rider "BestPracticesAndTips"
 
 Add there: 
-entity framework core with in memory database
+entity framework core with in a memory database
 all necessary classes
 Model for Customer (base 10 properties)
 Model for Order (8 properties)
 Model for Product (8 properties)
-and connect this models them
-Seed in memory database with some meaningful data
+and connect these models them
+Seed in a memory database with some meaningful data
 
 Then following Clean code, Clean architecture and Domain Driven Design prepare 
 Entities - use new or reuse EF Core models
