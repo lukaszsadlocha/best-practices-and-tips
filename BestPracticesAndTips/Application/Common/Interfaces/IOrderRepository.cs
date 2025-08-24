@@ -9,4 +9,5 @@ public interface IOrderRepository : IRepository<Order>
     Task<IEnumerable<Order>> GetOrdersByStatusAsync(OrderStatus status);
     Task<Order?> GetOrderWithDetailsAsync(int orderId);
     Task<IEnumerable<Order>> GetRecentOrdersAsync(int days = 30);
+    Task<IEnumerable<Order>> GetOrdersInDateRangeAsync(DateTime startDate, DateTime endDate);
 }

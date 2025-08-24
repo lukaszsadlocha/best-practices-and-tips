@@ -1,21 +1,15 @@
 using BestPracticesAndTips.Application.Common.Interfaces;
+using BestPracticesAndTips.Application.Common.Interfaces.UseCases;
 using BestPracticesAndTips.Application.DTOs;
 using BestPracticesAndTips.Domain.Entities;
-using MediatR;
 
 namespace BestPracticesAndTips.Application.UseCases.Customers;
 
-public class GetCustomerByIdQuery : IRequest<CustomerDto?>
+public class GetCustomerByIdUseCase(ICustomerRepository customerRepository) : IGetCustomerByIdUseCase
 {
-    public int Id { get; init; }
-}
-
-public class GetCustomerByIdQueryHandler(ICustomerRepository customerRepository)
-    : IRequestHandler<GetCustomerByIdQuery, CustomerDto?>
-{
-    public async Task<CustomerDto?> Handle(GetCustomerByIdQuery request, CancellationToken cancellationToken)
+    public async Task<CustomerDto?> ExecuteAsync(int id, CancellationToken cancellationToken = default)
     {
-        var customer = await customerRepository.GetByIdAsync(request.Id);
+        var customer = await customerRepository.GetByIdAsync(id);
         
         return customer == null ? null : MapToDto(customer);
     }

@@ -48,4 +48,15 @@ public class OrderRepository(ApplicationDbContext context) : Repository<Order>(c
             .OrderByDescending(o => o.OrderDate)
             .ToListAsync();
     }
+
+    public async Task<IEnumerable<Order>> GetOrdersInDateRangeAsync(DateTime startDate, DateTime endDate)
+    {
+        return await _dbSet
+            .Where(o => o.OrderDate >= startDate && o.OrderDate <= endDate)
+            .Include(o => o.Customer)
+            .Include(o => o.OrderItems)
+            .ThenInclude(oi => oi.Product)
+            .OrderByDescending(o => o.OrderDate)
+            .ToListAsync();
+    }
 }

@@ -1,28 +1,21 @@
 using BestPracticesAndTips.Application.Common.Interfaces;
+using BestPracticesAndTips.Application.Common.Interfaces.UseCases;
 using BestPracticesAndTips.Application.DTOs;
 using BestPracticesAndTips.Domain.Entities;
-using MediatR;
 
 namespace BestPracticesAndTips.Application.UseCases.Products;
 
-public class GetProductsQuery : IRequest<IEnumerable<ProductDto>>
+public class GetProductsUseCase(IProductRepository productRepository) : IGetProductsUseCase
 {
-    public bool ActiveOnly { get; init; } = true;
-    public string? Category { get; init; }
-}
-
-public class GetProductsQueryHandler(IProductRepository productRepository)
-    : IRequestHandler<GetProductsQuery, IEnumerable<ProductDto>>
-{
-    public async Task<IEnumerable<ProductDto>> Handle(GetProductsQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<ProductDto>> ExecuteAsync(bool activeOnly = true, string? category = null, CancellationToken cancellationToken = default)
     {
         IEnumerable<Product> products;
 
-        if (!string.IsNullOrEmpty(request.Category))
+        if (!string.IsNullOrEmpty(category))
         {
-            products = await productRepository.GetProductsByCategoryAsync(request.Category);
+            products = await productRepository.GetProductsByCategoryAsync(category);
         }
-        else if (request.ActiveOnly)
+        else if (activeOnly)
         {
             products = await productRepository.GetActiveProductsAsync();
         }

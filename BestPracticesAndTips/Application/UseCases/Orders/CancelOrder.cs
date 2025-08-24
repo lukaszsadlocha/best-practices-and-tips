@@ -6,30 +6,38 @@ using BestPracticesAndTips.Domain.Enums;
 
 namespace BestPracticesAndTips.Application.UseCases.Orders;
 
-public class GetOrdersUseCase(IOrderRepository orderRepository) : IGetOrdersUseCase
+public class CancelOrderUseCase(IOrderRepository orderRepository, IProductRepository productRepository) : ICancelOrderUseCase
 {
-    public async Task<IEnumerable<OrderDto>> ExecuteAsync(int? customerId = null, OrderStatus? status = null, bool recentOnly = false, int recentDays = 30, CancellationToken cancellationToken = default)
+    public async Task<OrderDto> ExecuteAsync(int id, CancellationToken cancellationToken = default)
     {
-        IEnumerable<Order> orders;
-
-        if (customerId.HasValue)
+        var order = await orderRepository.GetByIdAsync(id);
+        if (order == null)
         {
-            orders = await orderRepository.GetOrdersByCustomerIdAsync(customerId.Value);
-        }
-        else if (status.HasValue)
-        {
-            orders = await orderRepository.GetOrdersByStatusAsync(status.Value);
-        }
-        else if (recentOnly)
-        {
-            orders = await orderRepository.GetRecentOrdersAsync(recentDays);
-        }
-        else
-        {
-            orders = await orderRepository.GetAllAsync();
+            throw new InvalidOperationException($"Order with ID {id} not found.");
         }
 
-        return orders.Select(MapToDto);
+        // Business rule: can only cancel pending orders
+        if (order.Status != OrderStatus.Pending)
+        {
+            throw new InvalidOperationException($"Cannot cancel order with status '{order.Status}'. Only pending orders can be cancelled.");
+        }
+
+        // Restore inventory for cancelled order items
+        foreach (var orderItem in order.OrderItems)
+        {
+            var product = await productRepository.GetByIdAsync(orderItem.ProductId);
+            if (product != null)
+            {
+                product.UpdateStock(orderItem.Quantity); // Add back to stock
+                await productRepository.UpdateAsync(product);
+            }
+        }
+
+        // Cancel order using domain method
+        order.CancelOrder();
+        var cancelledOrder = await orderRepository.UpdateAsync(order);
+
+        return MapToDto(cancelledOrder);
     }
 
     private static OrderDto MapToDto(Order order)

@@ -6,30 +6,27 @@ using BestPracticesAndTips.Domain.Enums;
 
 namespace BestPracticesAndTips.Application.UseCases.Orders;
 
-public class GetOrdersUseCase(IOrderRepository orderRepository) : IGetOrdersUseCase
+public class CompleteOrderUseCase(IOrderRepository orderRepository) : ICompleteOrderUseCase
 {
-    public async Task<IEnumerable<OrderDto>> ExecuteAsync(int? customerId = null, OrderStatus? status = null, bool recentOnly = false, int recentDays = 30, CancellationToken cancellationToken = default)
+    public async Task<OrderDto> ExecuteAsync(int id, CancellationToken cancellationToken = default)
     {
-        IEnumerable<Order> orders;
-
-        if (customerId.HasValue)
+        var order = await orderRepository.GetByIdAsync(id);
+        if (order == null)
         {
-            orders = await orderRepository.GetOrdersByCustomerIdAsync(customerId.Value);
-        }
-        else if (status.HasValue)
-        {
-            orders = await orderRepository.GetOrdersByStatusAsync(status.Value);
-        }
-        else if (recentOnly)
-        {
-            orders = await orderRepository.GetRecentOrdersAsync(recentDays);
-        }
-        else
-        {
-            orders = await orderRepository.GetAllAsync();
+            throw new InvalidOperationException($"Order with ID {id} not found.");
         }
 
-        return orders.Select(MapToDto);
+        // Business rule: can only complete shipped orders
+        if (order.Status != OrderStatus.Shipped)
+        {
+            throw new InvalidOperationException($"Cannot complete order with status '{order.Status}'. Only shipped orders can be completed.");
+        }
+
+        // Complete order using domain method
+        order.CompleteOrder();
+        var completedOrder = await orderRepository.UpdateAsync(order);
+
+        return MapToDto(completedOrder);
     }
 
     private static OrderDto MapToDto(Order order)

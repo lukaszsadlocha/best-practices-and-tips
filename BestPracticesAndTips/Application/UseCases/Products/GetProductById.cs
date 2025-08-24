@@ -1,21 +1,15 @@
 using BestPracticesAndTips.Application.Common.Interfaces;
+using BestPracticesAndTips.Application.Common.Interfaces.UseCases;
 using BestPracticesAndTips.Application.DTOs;
 using BestPracticesAndTips.Domain.Entities;
-using MediatR;
 
 namespace BestPracticesAndTips.Application.UseCases.Products;
 
-public class GetProductByIdQuery : IRequest<ProductDto?>
+public class GetProductByIdUseCase(IProductRepository productRepository) : IGetProductByIdUseCase
 {
-    public int Id { get; init; }
-}
-
-public class GetProductByIdQueryHandler(IProductRepository productRepository)
-    : IRequestHandler<GetProductByIdQuery, ProductDto?>
-{
-    public async Task<ProductDto?> Handle(GetProductByIdQuery request, CancellationToken cancellationToken)
+    public async Task<ProductDto?> ExecuteAsync(int id, CancellationToken cancellationToken = default)
     {
-        var product = await productRepository.GetByIdAsync(request.Id);
+        var product = await productRepository.GetByIdAsync(id);
         
         return product == null ? null : MapToDto(product);
     }

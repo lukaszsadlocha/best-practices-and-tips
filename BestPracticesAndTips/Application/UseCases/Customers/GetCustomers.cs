@@ -1,21 +1,15 @@
 using BestPracticesAndTips.Application.Common.Interfaces;
+using BestPracticesAndTips.Application.Common.Interfaces.UseCases;
 using BestPracticesAndTips.Application.DTOs;
 using BestPracticesAndTips.Domain.Entities;
-using MediatR;
 
 namespace BestPracticesAndTips.Application.UseCases.Customers;
 
-public class GetCustomersQuery : IRequest<IEnumerable<CustomerDto>>
+public class GetCustomersUseCase(ICustomerRepository customerRepository) : IGetCustomersUseCase
 {
-    public bool ActiveOnly { get; init; }
-}
-
-public class GetCustomersQueryHandler(ICustomerRepository customerRepository)
-    : IRequestHandler<GetCustomersQuery, IEnumerable<CustomerDto>>
-{
-    public async Task<IEnumerable<CustomerDto>> Handle(GetCustomersQuery request, CancellationToken cancellationToken)
+    public async Task<IEnumerable<CustomerDto>> ExecuteAsync(bool activeOnly = true, CancellationToken cancellationToken = default)
     {
-        var customers = request.ActiveOnly 
+        var customers = activeOnly 
             ? await customerRepository.GetActiveCustomersAsync()
             : await customerRepository.GetAllAsync();
 

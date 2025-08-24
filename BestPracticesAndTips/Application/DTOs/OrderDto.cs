@@ -41,3 +41,10 @@ public record CreateOrderItemDto
     public int ProductId { get; set; }
     public int Quantity { get; set; }
 }
+
+public record UpdateOrderDto
+{
+    public string ShippingAddress { get; set; } = string.Empty;
+    public string BillingAddress { get; set; } = string.Empty;
+    public string? Notes { get; set; }
+}

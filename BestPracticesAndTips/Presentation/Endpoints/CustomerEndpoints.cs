@@ -1,6 +1,5 @@
+using BestPracticesAndTips.Application.Common.Interfaces.UseCases;
 using BestPracticesAndTips.Application.DTOs;
-using BestPracticesAndTips.Application.UseCases.Customers;
-using MediatR;
 
 namespace BestPracticesAndTips.Presentation.Endpoints;
 
@@ -12,20 +11,18 @@ public static class CustomerEndpoints
             .WithTags("Customers")
             .WithOpenApi();
 
-        group.MapGet("/", async (IMediator mediator, bool activeOnly = true) =>
+        group.MapGet("/", async (IGetCustomersUseCase useCase, bool activeOnly = true) =>
         {
-            var query = new GetCustomersQuery { ActiveOnly = activeOnly };
-            var customers = await mediator.Send(query);
+            var customers = await useCase.ExecuteAsync(activeOnly);
             return Results.Ok(customers);
         })
         .WithName("GetCustomers")
         .WithSummary("Get all customers")
         .Produces<IEnumerable<CustomerDto>>();
 
-        group.MapGet("/{id:int}", async (IMediator mediator, int id) =>
+        group.MapGet("/{id:int}", async (IGetCustomerByIdUseCase useCase, int id) =>
         {
-            var query = new GetCustomerByIdQuery { Id = id };
-            var customer = await mediator.Send(query);
+            var customer = await useCase.ExecuteAsync(id);
             return customer is not null ? Results.Ok(customer) : Results.NotFound();
         })
         .WithName("GetCustomerById")
@@ -33,12 +30,11 @@ public static class CustomerEndpoints
         .Produces<CustomerDto>()
         .Produces(404);
 
-        group.MapPost("/", async (IMediator mediator, CreateCustomerDto customerDto) =>
+        group.MapPost("/", async (ICreateCustomerUseCase useCase, CreateCustomerDto customerDto) =>
         {
             try
             {
-                var command = new CreateCustomerCommand { Customer = customerDto };
-                var customer = await mediator.Send(command);
+                var customer = await useCase.ExecuteAsync(customerDto);
                 return Results.Created($"/api/customers/{customer.Id}", customer);
             }
             catch (InvalidOperationException ex)
@@ -50,5 +46,51 @@ public static class CustomerEndpoints
         .WithSummary("Create a new customer")
         .Produces<CustomerDto>(201)
         .Produces(400);
+
+        group.MapPut("/{id:int}", async (IUpdateCustomerUseCase useCase, int id, UpdateCustomerDto customerDto) =>
+        {
+            try
+            {
+                var customer = await useCase.ExecuteAsync(id, customerDto);
+                return Results.Ok(customer);
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(ex.Message);
+            }
+        })
+        .WithName("UpdateCustomer")
+        .WithSummary("Update customer details")
+        .Produces<CustomerDto>()
+        .Produces(400)
+        .Produces(404);
+
+        group.MapDelete("/{id:int}", async (IDeleteCustomerUseCase useCase, int id) =>
+        {
+            try
+            {
+                var result = await useCase.ExecuteAsync(id);
+                return result ? Results.NoContent() : Results.NotFound();
+            }
+            catch (InvalidOperationException ex)
+            {
+                return Results.BadRequest(ex.Message);
+            }
+        })
+        .WithName("DeleteCustomer")
+        .WithSummary("Delete (deactivate) customer")
+        .Produces(204)
+        .Produces(400)
+        .Produces(404);
+
+        group.MapGet("/{id:int}/analytics", async (IGetCustomerAnalyticsUseCase useCase, int id) =>
+        {
+            var analytics = await useCase.ExecuteAsync(id);
+            return analytics is not null ? Results.Ok(analytics) : Results.NotFound();
+        })
+        .WithName("GetCustomerAnalytics")
+        .WithSummary("Get customer analytics and lifetime value")
+        .Produces<CustomerAnalyticsDto>()
+        .Produces(404);
     }
 }
